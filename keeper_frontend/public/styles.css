@@ -1,0 +1,42 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: inherit;
+}
+html {
+    box-sizing: border-box;
+}
+body{
+    background-color: rgb(255, 255, 255);
+    width: 100%;
+    overflow: scroll;
+    display: inline-block;
+
+}
+
+#root {
+    display: inline-block;
+}
+.note {
+    max-width: 300px;
+    padding: 15px;
+    margin: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+}
+.note-input {
+    margin: 5px;
+    padding: 5px;
+    border: 0.5px dotted darkolivegreen;
+    border-radius: 15px;
+}
+.title {
+    font-size: 1.25rem;
+    font-weight: normal;
+}
+.contents {
+    font-size: 1.0rem;
+    font-weight: lighter;
+}
