@@ -6,31 +6,31 @@ import { Paper } from "@mui/material";
 
 const url = "http://localhost:3005";
 
-export default function CreateArea() {
+export default function CreateArea({curUser}) {
   const [note, setNote] = useState({
     title: "",
-    contents: ""
+    contents: "",
+    currentUser: curUser,
   });
   const [toSendRequest, setToSendRequest] = useState(false);
 
   const handleInputChange = (event) => {
     const {name, value} = event.target;
     const updateNote = (prevState) => {
-        return {...prevState, [name] : value}
+        return {...prevState, [name]: value, currentUser: curUser}
     }
     setNote(updateNote);
   }
 
   // here no need to use useEffect(), createNote called on btn click
-  const createNote = async function (toSend) {
+  const createNote = async function () {
     if (!toSendRequest) return;
     
     try {
       const headers = {
-        headers: {
-          'content-type': 'application/json'
-        }
+        headers: { 'content-type': 'application/json' }
       };
+
       await axios.post(url, note, headers);
     } catch (error) {
       console.error(error)
@@ -49,7 +49,7 @@ export default function CreateArea() {
           <Button onClick={
             (event) => {
               setToSendRequest((prevState) => !prevState);
-              createNote(true);
+              createNote();
               event.preventDefault();
             } 
           }>

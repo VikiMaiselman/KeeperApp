@@ -1,46 +1,52 @@
 import React, { useEffect, useState } from "react";
-import { Grid } from "@mui/material";
 import axios from "axios";
 import Header from "./Header";
-import CreateArea from "./CreateArea";
-import Note from "./Note";
+import MainPage from "./MainPage";
+import AuthenticationPage from "./AuthenticationPage";
 
-const url = "http://localhost:3005/";
+const url = "http://localhost:3005";
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState('');
   const [notes, setNotes] = useState([]);
 
   const getNotes = async function() {
     try {
-      const {data} = await axios.get(url);
-      setNotes(data);
+      const {data} = await axios.get(`${url}/${currentUser}`, { withCredentials: true });
+      const userNotes = data[0].notes;
+
+      setNotes(userNotes);
     } catch (error) {
       console.error(error);
     }
   }
 
-  // GET request should be executed on each rerendering
+  // GET request should be executed on each render (no 2nd param specified)
   useEffect(() => {
     getNotes();
   });
 
+  const logOut = () => {
+    setIsAuthenticated(false);
+  }
+
   return (
     <div>
       <Header />
-      <CreateArea />
-      <Grid container spacing={0} className="main">
-      {notes.map((note, idx) => {
-        return (
-          <Grid item md={8} lg={3}>
-            <Note 
-                key={note._id} 
-                id={note._id} 
-                title={note.title} 
-                contents={note.contents} />
-          </Grid>
-        )
-      })}
-      </Grid>
+      {isAuthenticated ? 
+      (<div>
+          <MainPage notes={notes} currentUser={currentUser}/>
+          <button onClick={logOut}>
+            Log Out
+          </button>
+       </div>) : 
+      ( <AuthenticationPage 
+          authorize={setIsAuthenticated}
+          setUser={setCurrentUser}
+        />)
+      }
+
     </div>
   );
 };

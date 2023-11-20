@@ -11,19 +11,20 @@ export default function Note(props) {
     title: props.title,
     contents: props.contents, 
     id: props.id, 
+    currentUser: props.curUser,
   });
     
   const handleInputChange = (event) => {
     const {name, value} = event.target;
     const updateNote = (prevState) => {
-      return {...prevState, [name] : value}
+      return {...prevState, currentUser: props.curUser, [name]: value}
     }
     setNote(updateNote);
   }
 
   const deleteNote = async ()  => {
     try {
-      await axios.delete(`${url}/delete/${note.id}`);
+      await axios.delete(`${url}/delete/${note.id}/${note.currentUser}`);
     } catch (error) {
       console.error(error);
     }
@@ -34,7 +35,7 @@ export default function Note(props) {
 
     event.target.blur();
     try {
-      await axios.put(`${url}/update/${note.id}`, note);
+      await axios.put(`${url}/update/${note.id}/${note.currentUser}`, note);
     } catch (error) {
       console.error(error);
     }
