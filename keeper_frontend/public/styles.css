@@ -13,6 +13,9 @@ body{
     display: inline-block;
     font-family: monospace;
 }
+#root {
+    background-image: url('./pattern.png');
+}
 
 .header {
     text-align: center;
@@ -20,6 +23,14 @@ body{
     margin: 15px;
     background-color: #f5ba13;
     color: white;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+    padding: 50px;
 }
 
 .autorization {
@@ -33,10 +44,16 @@ body{
 }
 .authForm {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 5%;
+    gap: 10%;
+}
+.buttons {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5%;
 }
 
 .createArea {
@@ -50,14 +67,19 @@ body{
 }
 .createArea form {
     width: 100%;
+    min-width: 500px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
+.notesContainer {
+    min-width: 100%;
+}
 .note {
     max-width: 300px;
+    min-width: 300px;
     padding: 15px;
     margin: 25px;
     display: flex;
@@ -82,4 +104,9 @@ body{
 .contents {
     font-size: 1.0rem;
     font-weight: lighter;
+}
+
+.logoutBtn {
+    width: 10%;
+    margin: auto;
 }

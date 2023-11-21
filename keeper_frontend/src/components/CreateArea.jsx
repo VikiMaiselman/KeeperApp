@@ -6,18 +6,17 @@ import { Paper } from "@mui/material";
 
 const url = "http://localhost:3005";
 
-export default function CreateArea({curUser}) {
+export default function CreateArea({getNotes}) {
   const [note, setNote] = useState({
     title: "",
     contents: "",
-    currentUser: curUser,
   });
   const [toSendRequest, setToSendRequest] = useState(false);
 
   const handleInputChange = (event) => {
     const {name, value} = event.target;
     const updateNote = (prevState) => {
-        return {...prevState, [name]: value, currentUser: curUser}
+        return {...prevState, [name]: value}
     }
     setNote(updateNote);
   }
@@ -28,10 +27,11 @@ export default function CreateArea({curUser}) {
     
     try {
       const headers = {
-        headers: { 'content-type': 'application/json' }
-      };
-
-      await axios.post(url, note, headers);
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+      }; 
+      await axios.post(url, note, { withCredentials: true}, headers);
+      await getNotes();
     } catch (error) {
       console.error(error)
     }

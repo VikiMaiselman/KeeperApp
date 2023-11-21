@@ -5,26 +5,30 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import axios from "axios";
 
 const url = "http://localhost:3005";
+const headers = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "http://localhost:3000",
+}; 
 
 export default function Note(props) {
   const [note, setNote] = useState({
     title: props.title,
     contents: props.contents, 
     id: props.id, 
-    currentUser: props.curUser,
   });
     
   const handleInputChange = (event) => {
     const {name, value} = event.target;
     const updateNote = (prevState) => {
-      return {...prevState, currentUser: props.curUser, [name]: value}
+      return {...prevState, [name]: value}
     }
     setNote(updateNote);
   }
 
   const deleteNote = async ()  => {
     try {
-      await axios.delete(`${url}/delete/${note.id}/${note.currentUser}`);
+      await axios.delete(`${url}/delete/${note.id}`, { withCredentials: true }, headers);
+      await props.getNotes();
     } catch (error) {
       console.error(error);
     }
@@ -35,7 +39,8 @@ export default function Note(props) {
 
     event.target.blur();
     try {
-      await axios.put(`${url}/update/${note.id}/${note.currentUser}`, note);
+      await axios.put(`${url}/update/${note.id}`, note, { withCredentials: true}, headers);
+      await props.getNotes();
     } catch (error) {
       console.error(error);
     }
