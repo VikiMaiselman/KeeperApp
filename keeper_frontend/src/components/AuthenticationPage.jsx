@@ -65,7 +65,7 @@ export default function AuthenticationPage({authorize, setNotes}) {
             </FormControl>   
             <FormControl>
                 <InputLabel htmlFor="password">Password</InputLabel>
-                <Input id="password" name="password" onChange={handleChange} value={userData.password} placeholder="Enter your password"/>
+                <Input id="password" type="password" name="password" onChange={handleChange} value={userData.password} placeholder="Enter your password"/>
             </FormControl>
             </div>
             <div class="buttons">
