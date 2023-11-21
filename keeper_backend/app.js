@@ -17,6 +17,18 @@ app.use(cors({
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // allow session cookie from browser to pass through
 }));
+app.use("*", function (req, res, next) {
+    // res.header("Access-Control-Allow-Origin", "https://foothillfitness.com");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Credentials", true);
+    next();
+});
+  
+// enable pre-flight
+ app.options("*", cors());
+
 app.use(express.static("public"));
 app.use(express.json());
 app.use(bodyParser.json());
@@ -25,7 +37,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 // 1. Configure a session, initialize passport
 app.use(session({
     secret: process.env.PASSPORT_SECRET,
-    resave: true,
+    resave: false,
     saveUninitialized: false,
 }));
 app.use(passport.initialize());
@@ -65,14 +77,14 @@ async function initDB() {
 initDB();
 
 
-app.get("/:userId", async (req, res) => {
+app.get("/", async (req, res) => {
     let notes; 
-    const userId = req.params?.userId;
-    if(!userId) return res.status(200);
+
+    if(!req.user) return res.status(200).json({isAuthenticated: false, notes:[]});
 
     try {
-        notes = await User.find({_id: userId});
-        return res.status(200).json(notes);
+        notes = await User.find({_id: req.user._id});
+        return res.status(200).json({notes: notes[0].notes, isAuthenticated: true});
     } catch (error) {
         console.error(error);
         return res.status(400).json({errorMsg: "Could not fetch data. Try again later."});
@@ -80,7 +92,7 @@ app.get("/:userId", async (req, res) => {
 });
 
 app.post("/", async (req, res) => {
-    const {title, contents, currentUser} = req.body;
+    const {title, contents} = req.body;
 
     const newNote = new Note({
         title: title,
@@ -88,42 +100,39 @@ app.post("/", async (req, res) => {
     });
 
     try {
-        await User.updateOne({_id: currentUser}, {$push: {notes: newNote}});
+        await User.updateOne({_id: req.user?._id}, {$push: {notes: newNote}});
     } catch (error) {
         console.error(error);
-        return res.status(404).json({errorMsg: "No data created."})
+        return res.status(404).json({errorMsg: "No data created."});
     }
 
     return res.status(201).json("Successfully created a new note");
 })
 
-app.delete("/delete/:noteId/:userId", async (req, res) => {
+app.delete("/delete/:noteId", async (req, res) => {
     const noteId = req.params.noteId;
-    const userId = req.params.userId;
 
     try {
-        await User.updateOne({_id: userId}, {$pull: { notes : { _id: noteId } }});
-        // await Note.deleteOne({_id: id});
+        await User.updateOne({_id: req.user?._id}, {$pull: { notes : { _id: noteId } }});
     } catch (error) {
         console.error(error);
-        return res.status(400).json({errorMsg: "Could not delete data. Try again later."})
+        return res.status(400).json({errorMsg: "Could not delete data. Try again later."});
     }
 
     return res.status(200).json("Successfully deleted the note.");
 }) 
 
-app.put("/update/:noteId/:userId", async (req, res) => {
+app.put("/update/:noteId", async (req, res) => {
     const noteId = req.params.noteId;
-    const userId = req.params.userId;
 
     try {
         await User.findOneAndUpdate(
-            { _id: userId, 'notes._id': noteId }, 
+            { _id: req.user?._id, 'notes._id': noteId }, 
             { 
                 $set: { 
                     'notes.$.title': req.body.title,
                     'notes.$.contents': req.body.contents,
-                    'notes.$.currentUser': req.body.currentUser,
+                    'notes.$.currentUser': req.user?._id,
                 } 
             }
         );
@@ -149,36 +158,29 @@ app.post('/register', async (req, res) => {
 
         // if we are here - the user created sucessfully, now we will authenticate him
         passport.authenticate("local")(req, res, function() {
-            // res.redirect('/');
-            res.json({isAuthenticated: true, user: req.user});
-        });
-
-    })
-});
-
-app.post('/login', async (req, res) => {
-    const email = req.body.username;
-    const password = req.body.password;
-
-    const user = new User({
-        username: email, password: password
-    });
-
-    // passport package does the login, but it does in on req param
-    req.login(user, function(err) {
-        if (err) {
-            // the user was not found in the DB
-            console.error(err);
-            res.status(404).json({isAuthenticated: false});
-            return;
-        } 
-        
-        // if we are here - the user was found sucessfully, now we will authenticate him
-        passport.authenticate("local")(req, res, function() {
-            res.json({isAuthenticated: true, user: req.user});
+            res.redirect('/');
         });
     })
 });
+
+app.post('/login/',
+  passport.authenticate('local', { failureRedirect: '/login', failureMessage: true }),
+  function(req, res) {
+    res.redirect('/');
+});
+
+app.get('/isAuthenticated', async (req, res) => {
+    return res.json(req.isAuthenticated());
+});
+
+app.get('/logout', (req, res, next) => {
+    req.logout(function(err) {
+        if (err) { 
+            return next(err); 
+        }
+        res.redirect('/');
+      });
+})
 
 app.listen(port, () => console.log(`Server's up. Listening on port ${port}`));
 
