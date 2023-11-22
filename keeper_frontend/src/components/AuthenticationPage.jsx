@@ -23,16 +23,24 @@ export default function AuthenticationPage({authorize, setNotes}) {
         setUserData(updateUserData);
     }
 
-    const handleSignUp = async () => {
+    const authenticateUser = async (path) => {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "http://localhost:3000",
            }; 
 
-            const response = await axios.post(`${url}/register`, userData, { withCredentials: true}, headers);
+            const response = await axios.post(`${url}/${path}`, userData, { withCredentials: true}, headers);
             authorize(response.data.isAuthenticated);
             setNotes(response.data.notes)
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    const handleSignUp = async () => {
+        try {
+            await authenticateUser("register");
         } catch (error) {
             alert(error.response.data.errorMsg);
             console.error(error.response);
@@ -41,14 +49,7 @@ export default function AuthenticationPage({authorize, setNotes}) {
 
     const handleLogIn = async () => {
         try {
-            const headers = {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "http://localhost:3000",
-           }; 
-           
-            const response = await axios.post(`${url}/login`, userData, { withCredentials: true}, headers);
-            authorize(response.data.isAuthenticated);
-            setNotes(response.data.notes)
+            await authenticateUser("login");
         } catch (error) {
             alert("Login failed. Check wether your username and/or password are correct.");
             console.error(error.message);

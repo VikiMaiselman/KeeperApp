@@ -34,10 +34,11 @@ export default function Note(props) {
     }
   }
 
-  const handlePressingEnter = async (event) => {
+  const updateNoteOnEnterKeydown = async (event) => {
     if (event.key !== 'Enter') return;
 
     event.target.blur();
+
     try {
       await axios.put(`${url}/update/${note.id}`, note, { withCredentials: true}, headers);
       await props.getNotes();
@@ -48,15 +49,14 @@ export default function Note(props) {
 
   return (
     <Paper className="note" elevation={2} sx={{backgroundColor: "#FFF9F0"}}>
-        <textarea className="note-input title" onKeyDown={handlePressingEnter} onChange={handleInputChange} name="title" value={note.title}/>
-        <textarea className="note-input" onKeyDown={handlePressingEnter} onChange={handleInputChange} name="contents" value={note.contents} rows={3}/>
+        <textarea className="note-input title" onKeyDown={updateNoteOnEnterKeydown} onChange={handleInputChange} name="title" value={note.title}/>
+        <textarea className="note-input" onKeyDown={updateNoteOnEnterKeydown} onChange={handleInputChange} name="contents" value={note.contents} rows={3}/>
         <Button onClick={(event) => {
             deleteNote();
             event.preventDefault();
         }}>
           <DeleteForeverIcon fontSize="large" sx={{color: "#4E4637", position: "relative", left: "42.5%"}}/>
         </Button>
-
     </Paper>
   );
 }

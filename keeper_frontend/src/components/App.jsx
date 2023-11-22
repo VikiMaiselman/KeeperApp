@@ -14,7 +14,7 @@ const headers = {
 
 
 export default function App() {
-  const isUserAuthenticated = async () => {
+  const setUserAuthStatus = async () => {
     try {
       const response = await axios.get(`${url}/isAuthenticated`, { withCredentials: true }, headers);
       setIsAuthenticated(response.data);
@@ -26,8 +26,8 @@ export default function App() {
 
   const getNotes = async function() {
     try {
-      const data = await axios.get(url, { withCredentials: true }, headers);
-      const userNotes = data.data.notes;
+      const result = await axios.get(url, { withCredentials: true }, headers);
+      const userNotes = result.data.notes;
       setNotes(userNotes);
     } catch (error) {
       console.error(error);
@@ -39,9 +39,9 @@ export default function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      await isUserAuthenticated();
+      await setUserAuthStatus();
     };
-
+    
     initializeApp();
   }, []); // Empty dependency array ensures this runs once on mount
 
