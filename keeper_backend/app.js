@@ -25,9 +25,8 @@ app.use("*", function (req, res, next) {
     res.header("Access-Control-Allow-Credentials", true);
     next();
 });
-  
 // enable pre-flight
- app.options("*", cors());
+app.options("*", cors());
 
 app.use(express.static("public"));
 app.use(express.json());
@@ -70,21 +69,21 @@ async function initDB() {
 
     // 3. Configure passport-local
     passport.use(User.createStrategy()); // creates local login strategy
-    
     passport.serializeUser(User.serializeUser()); // creates session cookie
     passport.deserializeUser(User.deserializeUser()); // cracks session cookie to obtain info 
 }
 initDB();
 
 
+/* ***************** M A I N   F U N C T I O N A L I T Y ***************** */
 app.get("/", async (req, res) => {
-    let notes; 
+    let user; 
 
     if(!req.user) return res.status(200).json({isAuthenticated: false, notes:[]});
 
     try {
-        notes = await User.find({_id: req.user._id});
-        return res.status(200).json({notes: notes[0].notes, isAuthenticated: true});
+        user = await User.find({_id: req.user._id});
+        return res.status(200).json({notes: user[0].notes, isAuthenticated: true});
     } catch (error) {
         console.error(error);
         return res.status(400).json({errorMsg: "Could not fetch data. Try again later."});
@@ -100,27 +99,25 @@ app.post("/", async (req, res) => {
     });
 
     try {
-        await User.updateOne({_id: req.user?._id}, {$push: {notes: newNote}});
+        await User.updateOne({_id: req.user?._id}, {$push: { notes : newNote }});
+        return res.status(201).json("Successfully created a new note");
     } catch (error) {
         console.error(error);
         return res.status(404).json({errorMsg: "No data created."});
     }
-
-    return res.status(201).json("Successfully created a new note");
-})
+});
 
 app.delete("/delete/:noteId", async (req, res) => {
     const noteId = req.params.noteId;
 
     try {
         await User.updateOne({_id: req.user?._id}, {$pull: { notes : { _id: noteId } }});
+        return res.status(200).json("Successfully deleted the note.");
     } catch (error) {
         console.error(error);
         return res.status(400).json({errorMsg: "Could not delete data. Try again later."});
     }
-
-    return res.status(200).json("Successfully deleted the note.");
-}) 
+});
 
 app.put("/update/:noteId", async (req, res) => {
     const noteId = req.params.noteId;
@@ -136,13 +133,12 @@ app.put("/update/:noteId", async (req, res) => {
                 } 
             }
         );
+        return res.status(200).json("Successfully updated the note.");
     } catch (error) {
         console.error(error);
         return res.status(400).json({errorMsg: "Could not update data. Try again later."});
     }
-
-    return res.status(200).json("Successfully updated the note.");
-})
+});
 
 /* ***************** A U T H E N T I C A T I O N ***************** */
 app.post('/register', async (req, res) => {
@@ -156,7 +152,6 @@ app.post('/register', async (req, res) => {
             return;
         }
 
-        // if we are here - the user created sucessfully, now we will authenticate him
         passport.authenticate("local")(req, res, function() {
             res.redirect('/');
         });
